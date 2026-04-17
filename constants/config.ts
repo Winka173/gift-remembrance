@@ -8,12 +8,16 @@ export const APP_CONFIG = {
   maxPhotosPerGift: 5,
   maxPhotoSizeMb: 10,
   maxBackupSizeMb: 50,
+  MAX_PHOTO_WIDTH: 1200,
+  PHOTO_QUALITY: 0.7,
+  AUTO_BACKUP_INTERVAL_MS: 24 * 60 * 60 * 1000,
+  AUTO_BACKUP_RETAIN_COUNT: 5,
 } as const;
 
 export const RATE_LIMIT = {
-  addPersonPerDay: 20,
-  addGiftPerDay: 100,
-  backupPerDay: 5,
+  WINDOW_MS: 5 * 60 * 1000,
+  THRESHOLD: 5,
+  INTERSTITIAL_COOLDOWN_MS: 10 * 60 * 1000,
 } as const;
 
 export const AD_UNIT_IDS = {
