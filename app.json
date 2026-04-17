@@ -1,0 +1,91 @@
+{
+  "expo": {
+    "name": "Gift Remembrance",
+    "slug": "gift-remembrance",
+    "scheme": "giftremembrance",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FAFAF7"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.giftremembrance.app",
+      "infoPlist": {
+        "NSContactsUsageDescription": "Gift Remembrance uses your contacts to help you quickly add people you care about.",
+        "NSPhotoLibraryUsageDescription": "Gift Remembrance uses your photo library to attach photos to gift memories.",
+        "NSCameraUsageDescription": "Gift Remembrance uses your camera to capture photos of gifts.",
+        "NSUserTrackingUsageDescription": "Gift Remembrance uses advertising identifiers to show relevant ads. This helps keep the app free.",
+        "GADApplicationIdentifier": "ca-app-pub-3940256099942544~1458002511"
+      },
+      "entitlements": {
+        "com.apple.developer.icloud-container-identifiers": [
+          "iCloud.com.giftremembrance.app"
+        ],
+        "com.apple.developer.icloud-services": [
+          "CloudDocuments"
+        ],
+        "com.apple.developer.ubiquity-container-identifiers": [
+          "iCloud.com.giftremembrance.app"
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FAFAF7"
+      },
+      "package": "com.giftremembrance.app",
+      "permissions": [
+        "READ_CONTACTS",
+        "POST_NOTIFICATIONS",
+        "READ_MEDIA_IMAGES"
+      ],
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "react-native-reanimated",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#6F52EE",
+          "sounds": []
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Gift Remembrance uses your contacts to help you quickly add people you care about."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Gift Remembrance uses your photo library to attach photos to gift memories.",
+          "cameraPermission": "Gift Remembrance uses your camera to capture photos of gifts."
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ],
+      "expo-dev-client"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
