@@ -9,6 +9,7 @@ import { useTheme } from '@/constants/theme';
 import { springs } from '@/constants/motion';
 import { typography } from '@/constants/typography';
 import { ArrowUpRight, ArrowDownLeft } from '@/constants/icons';
+import { haptic } from '@/utils/haptics';
 
 interface GiftDirectionToggleProps {
   value: 'given' | 'received';
@@ -48,7 +49,10 @@ export function GiftDirectionToggle({
 
     return (
       <Pressable
-        onPress={() => onChange(pill)}
+        onPress={() => {
+          if (value !== pill) haptic.select();
+          onChange(pill);
+        }}
         accessibilityRole="button"
         accessibilityLabel={`Mark as ${label}`}
         accessibilityState={{ selected }}

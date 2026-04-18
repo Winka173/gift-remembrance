@@ -15,6 +15,7 @@ import { springs, duration } from '@/constants/motion';
 import { typography } from '@/constants/typography';
 import { Plus, Gift, Users, CalendarPlus } from '@/constants/icons';
 import type { LucideIcon } from 'lucide-react-native';
+import { haptic } from '@/utils/haptics';
 
 interface FABMenuProps {
   onAddGift: () => void;
@@ -133,6 +134,7 @@ export function FABMenu({
 
   const toggle = () => {
     const next = !open;
+    haptic.medium();
     setOpen(next);
     openValue.value = withSpring(next ? 1 : 0, springs.fab);
   };

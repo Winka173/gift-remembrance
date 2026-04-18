@@ -10,6 +10,7 @@ import Animated, {
 import { useTheme } from '@/constants/theme';
 import { springs } from '@/constants/motion';
 import { Trash2 } from '@/constants/icons';
+import { haptic } from '@/utils/haptics';
 
 interface SwipeableRowProps {
   children: React.ReactNode;
@@ -37,6 +38,7 @@ export function SwipeableRow({
     })
     .onEnd(() => {
       if (-translateX.value >= deleteThreshold) {
+        runOnJS(haptic.heavy)();
         runOnJS(onDelete)();
         translateX.value = withSpring(0, springs.row);
       } else {

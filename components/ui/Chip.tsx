@@ -8,6 +8,7 @@ import Animated, {
 import { useTheme } from '@/constants/theme';
 import { springs, pressScale } from '@/constants/motion';
 import { typography } from '@/constants/typography';
+import { haptic } from '@/utils/haptics';
 
 interface ChipProps {
   label: string;
@@ -46,9 +47,14 @@ export function Chip({ label, selected = false, onPress, style }: ChipProps) {
 
   const textColor = selected ? colors.text.inverse : colors.text.secondary;
 
+  const handlePress = () => {
+    haptic.select();
+    onPress();
+  };
+
   return (
     <AnimatedPressable
-      onPress={onPress}
+      onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={[animatedStyle, containerStyle, style]}

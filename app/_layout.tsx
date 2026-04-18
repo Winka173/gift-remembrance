@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -25,8 +25,13 @@ import { initializeAds } from '@/utils/adsInit';
 import { registerNotificationTapHandler } from '@/utils/notificationBoot';
 import { rescheduleAllOccasionsThunk } from '@/store/thunks/rescheduleAllOccasionsThunk';
 import { autoBackupThunk } from '@/store/thunks/autoBackupThunk';
+import { useBiometricLock } from '@/hooks/useBiometricLock';
+import { BiometricLockScreen } from '@/components/ui/BiometricLockScreen';
+import { initSentry } from '@/utils/errorTracking';
 
 SplashScreen.preventAutoHideAsync();
+
+initSentry();
 
 runMigrationsIfNeeded();
 
@@ -35,6 +40,15 @@ const RESCHEDULE_THROTTLE_MS = 24 * 60 * 60 * 1000;
 export default function RootLayout() {
   const router = useRouter();
   const lastRescheduleRef = useRef<number>(0);
+  const prevAppStateRef = useRef<string>(AppState.currentState);
+  const [needsUnlock, setNeedsUnlock] = useState(false);
+  const { authenticate } = useBiometricLock();
+
+  const handleUnlock = useCallback(async () => {
+    const ok = await authenticate();
+    if (ok) setNeedsUnlock(false);
+    return ok;
+  }, [authenticate]);
 
   const [fontsLoaded, fontError] = useFonts({
     PlusJakartaSans_600SemiBold,
@@ -44,6 +58,12 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  useEffect(() => {
+    if (store.getState().settings.biometricLockOnLaunch) {
+      setNeedsUnlock(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -81,7 +101,15 @@ export default function RootLayout() {
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (nextState) => {
+      const prev = prevAppStateRef.current;
+      prevAppStateRef.current = nextState;
       if (nextState !== 'active') return;
+      if (
+        (prev === 'background' || prev === 'inactive') &&
+        store.getState().settings.biometricLockOnLaunch
+      ) {
+        setNeedsUnlock(true);
+      }
       const now = Date.now();
       if (now - lastRescheduleRef.current < RESCHEDULE_THROTTLE_MS) return;
       lastRescheduleRef.current = now;
@@ -101,7 +129,11 @@ export default function RootLayout() {
         <ErrorBoundary>
           <Provider store={store}>
             <ToastProvider>
-              <Stack screenOptions={{ headerShown: false }} />
+              {needsUnlock ? (
+                <BiometricLockScreen onUnlock={handleUnlock} />
+              ) : (
+                <Stack screenOptions={{ headerShown: false }} />
+              )}
             </ToastProvider>
           </Provider>
         </ErrorBoundary>

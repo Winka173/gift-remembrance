@@ -17,7 +17,7 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { useOccasions } from '@/hooks/useOccasions';
 import { deletePersonThunk } from '@/store/thunks/deletePersonThunk';
 import { deleteGift } from '@/store/slices/giftsSlice';
-import { computeYearSpend } from '@/utils/budgetUtils';
+import { computeYearSpend, formatCurrency } from '@/utils/budgetUtils';
 import type { Gift } from '@/types/gift';
 import type { Occasion } from '@/types/occasion';
 
@@ -111,6 +111,8 @@ export default function PersonDetailScreen() {
   }
 
   const ytdSpend = computeYearSpend(id, allGifts, currentYear);
+  const lastYearSpend = computeYearSpend(id, allGifts, currentYear - 1);
+  const twoYearsAgoSpend = computeYearSpend(id, allGifts, currentYear - 2);
 
   const handleEdit = () => {
     router.push(`/add-person?id=${id}`);
@@ -240,6 +242,35 @@ export default function PersonDetailScreen() {
               Given in {currentYear} ({currency})
             </Text>
           )}
+          {(lastYearSpend > 0 || twoYearsAgoSpend > 0) && (
+            <View style={{ gap: spacing.xs, alignItems: 'center' }}>
+              <Text
+                style={[typography.captionMedium, { color: colors.text.muted }]}
+              >
+                Previous years
+              </Text>
+              {lastYearSpend > 0 && (
+                <Text
+                  style={[
+                    typography.caption,
+                    { color: colors.text.secondary },
+                  ]}
+                >
+                  {currentYear - 1}: {formatCurrency(lastYearSpend, currency)}
+                </Text>
+              )}
+              {twoYearsAgoSpend > 0 && (
+                <Text
+                  style={[
+                    typography.caption,
+                    { color: colors.text.secondary },
+                  ]}
+                >
+                  {currentYear - 2}: {formatCurrency(twoYearsAgoSpend, currency)}
+                </Text>
+              )}
+            </View>
+          )}
         </View>
 
         <View style={{ gap: spacing.md }}>
@@ -298,6 +329,7 @@ export default function PersonDetailScreen() {
                 gifts={filteredGifts}
                 currentPersonId={id}
                 onDeleteGift={(giftId) => dispatch(deleteGift(giftId))}
+                searchable
               />
             </View>
           )}

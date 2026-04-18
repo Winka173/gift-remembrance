@@ -1,7 +1,21 @@
-import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { Stack, useRouter, usePathname } from 'expo-router';
 import { InterstitialProvider } from '@/components/ads/InterstitialManager';
+import { useAppSelector } from '@/store/hooks';
 
 export default function MainLayout() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const hasSeenOnboarding = useAppSelector(
+    (s) => s.settings.hasSeenOnboarding,
+  );
+
+  useEffect(() => {
+    if (!hasSeenOnboarding && pathname !== '/onboarding') {
+      router.replace('/onboarding');
+    }
+  }, [hasSeenOnboarding, pathname, router]);
+
   return (
     <InterstitialProvider>
       <Stack screenOptions={{ headerShown: false }}>

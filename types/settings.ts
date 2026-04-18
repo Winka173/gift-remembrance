@@ -20,4 +20,6 @@ export interface SettingsState {
   hasRequestedNotificationPermission: boolean;
   hasRequestedContactsPermission: boolean;
   hasRequestedTrackingAuth: boolean;
+  biometricLockEnabled: boolean;
+  biometricLockOnLaunch: boolean;
 }

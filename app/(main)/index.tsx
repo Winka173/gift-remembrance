@@ -17,6 +17,7 @@ import { usePeople } from '@/hooks/usePeople';
 import { useGifts } from '@/hooks/useGifts';
 import { useOccasions } from '@/hooks/useOccasions';
 import { nextOccurrence, daysUntil } from '@/utils/dateUtils';
+import { t } from '@/utils/i18n';
 
 export default function HomeScreen() {
   const { colors, spacing } = useTheme();
@@ -64,9 +65,9 @@ export default function HomeScreen() {
         <View style={{ flex: 1 }}>
           <EmptyState
             icon={Gift}
-            title="Start remembering gifts"
-            subtitle="Add someone to get started"
-            actionLabel="Add Person"
+            title={t('home.emptyTitle')}
+            subtitle={t('home.emptySubtitle')}
+            actionLabel={t('home.addPerson')}
             onAction={() => router.push('/add-person')}
           />
           <View
@@ -77,7 +78,7 @@ export default function HomeScreen() {
             }}
           >
             <Button
-              label="Import Contacts"
+              label={t('home.importContacts')}
               onPress={() => router.push('/contacts-import')}
               variant="secondary"
               accessibilityLabel="Import contacts"
@@ -100,7 +101,7 @@ export default function HomeScreen() {
                 <Text
                   style={[typography.h3, { color: colors.text.primary }]}
                 >
-                  Upcoming
+                  {t('home.upcoming')}
                 </Text>
                 <ScrollView
                   horizontal
@@ -125,7 +126,7 @@ export default function HomeScreen() {
                 <Text
                   style={[typography.h3, { color: colors.text.primary }]}
                 >
-                  Recent
+                  {t('home.recent')}
                 </Text>
                 <View style={{ gap: spacing.sm }}>
                   {recentGifts.map((g) => (

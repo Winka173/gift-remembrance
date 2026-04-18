@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns';
 import { useTheme } from '@/constants/theme';
 import { typography } from '@/constants/typography';
 import type { Gift } from '@/types/gift';
+import { Input } from '@/components/ui/Input';
 import { GiftCard } from './GiftCard';
 
 interface GiftTimelineProps {
@@ -12,6 +13,7 @@ interface GiftTimelineProps {
   currentPersonId?: string;
   onDeleteGift?: (id: string) => void;
   ListHeaderComponent?: React.ReactElement | null;
+  searchable?: boolean;
 }
 
 interface GiftSection {
@@ -27,13 +29,22 @@ export function GiftTimeline({
   currentPersonId,
   onDeleteGift,
   ListHeaderComponent,
+  searchable = false,
 }: GiftTimelineProps) {
   const { colors, spacing } = useTheme();
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [query, setQuery] = useState<string>('');
+
+  const filteredGifts = useMemo(() => {
+    if (!searchable) return gifts;
+    const q = query.trim().toLowerCase();
+    if (q.length === 0) return gifts;
+    return gifts.filter((g) => g.name.toLowerCase().includes(q));
+  }, [gifts, query, searchable]);
 
   const sortedGifts = useMemo(() => {
-    return [...gifts].sort((a, b) => (a.date < b.date ? 1 : -1));
-  }, [gifts]);
+    return [...filteredGifts].sort((a, b) => (a.date < b.date ? 1 : -1));
+  }, [filteredGifts]);
 
   const sections = useMemo<GiftSection[]>(() => {
     const slice = sortedGifts.slice(0, visibleCount);
@@ -78,11 +89,30 @@ export function GiftTimeline({
     }
   }, [visibleCount, sortedGifts.length]);
 
+  const searchHeader = searchable ? (
+    <View style={{ paddingTop: spacing.sm }}>
+      <Input
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search gifts"
+        autoCapitalize="none"
+      />
+    </View>
+  ) : null;
+
+  const combinedHeader =
+    searchHeader || ListHeaderComponent ? (
+      <View>
+        {ListHeaderComponent ?? null}
+        {searchHeader}
+      </View>
+    ) : null;
+
   return (
     <SectionList
       sections={sections}
       keyExtractor={(item) => item.id}
-      ListHeaderComponent={ListHeaderComponent ?? null}
+      ListHeaderComponent={combinedHeader}
       stickySectionHeadersEnabled={false}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}

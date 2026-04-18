@@ -126,6 +126,7 @@ export function OccasionCard({ occasion, onPress }: OccasionCardProps) {
 
       <View style={{ flex: 1, gap: spacing.xs }}>
         <Text
+          maxFontSizeMultiplier={1.3}
           style={[typography.bodySemi, { color: colors.text.primary }]}
           numberOfLines={1}
         >
@@ -140,6 +141,7 @@ export function OccasionCard({ occasion, onPress }: OccasionCardProps) {
         >
           <Icon size={14} color={colors.text.secondary} />
           <Text
+            maxFontSizeMultiplier={1.3}
             style={[typography.caption, { color: colors.text.secondary }]}
             numberOfLines={1}
           >

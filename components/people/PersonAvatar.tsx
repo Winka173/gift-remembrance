@@ -93,6 +93,7 @@ export function PersonAvatar({
   return (
     <View style={containerStyle}>
       <Text
+        maxFontSizeMultiplier={1.3}
         style={[
           typography.body,
           {

@@ -18,6 +18,8 @@ const defaultSettings: SettingsState = {
   hasRequestedNotificationPermission: false,
   hasRequestedContactsPermission: false,
   hasRequestedTrackingAuth: false,
+  biometricLockEnabled: false,
+  biometricLockOnLaunch: false,
 };
 
 const initialState: SettingsState = loadSlice<SettingsState>('settings', defaultSettings);

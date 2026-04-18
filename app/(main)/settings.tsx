@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -20,21 +20,24 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { useTheme } from '@/constants/theme';
 import { typography } from '@/constants/typography';
-import { X, ChevronRight } from '@/constants/icons';
+import { X, ChevronRight, Lock } from '@/constants/icons';
 import { CURRENCIES } from '@/constants/currencies';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useSettings } from '@/hooks/useSettings';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useBackup } from '@/hooks/useBackup';
+import { useBiometricLock } from '@/hooks/useBiometricLock';
 import { deleteAllDataThunk } from '@/store/thunks/deleteAllDataThunk';
 import { rescheduleAllOccasionsThunk } from '@/store/thunks/rescheduleAllOccasionsThunk';
 import { pickBackupFolder } from '@/utils/safUtils';
 import { resetAdsConsent } from '@/utils/adsInit';
+import { exportIcs } from '@/utils/icsExport';
+import { setLocale } from '@/utils/i18n';
 import { format } from 'date-fns';
-import type { ReminderDays } from '@/types/occasion';
+import type { ReminderDays, Occasion } from '@/types/occasion';
 
 const REMINDER_CHOICES: ReminderDays[] = [1, 3, 7, 14];
 const THEME_CHOICES: Array<{
@@ -64,6 +67,45 @@ export default function SettingsScreen() {
   const { settings, updateSettings } = useSettings();
   const notifications = useNotifications();
   const backupHook = useBackup();
+  const biometric = useBiometricLock();
+
+  const occasionsAllIds = useAppSelector((s) => s.occasions.allIds);
+  const occasionsById = useAppSelector((s) => s.occasions.byId);
+  const peopleById = useAppSelector((s) => s.people.byId);
+
+  const handleExportIcs = async () => {
+    try {
+      const list = occasionsAllIds
+        .map((oid) => occasionsById[oid])
+        .filter((o): o is Occasion => o != null);
+      await exportIcs(list, peopleById);
+    } catch (e) {
+      Alert.alert(
+        'Export failed',
+        'Could not export occasions. Please try again.',
+      );
+    }
+  };
+
+  const handleToggleBiometricLock = async (value: boolean) => {
+    if (value) {
+      const available = await biometric.isAvailable();
+      if (!available) {
+        Alert.alert(
+          'Biometrics unavailable',
+          'Set up Face ID, Touch ID, or a device passcode in your system settings first.',
+        );
+        return;
+      }
+      updateSettings({ biometricLockEnabled: true });
+    } else {
+      updateSettings({ biometricLockEnabled: false, biometricLockOnLaunch: false });
+    }
+  };
+
+  const handleToggleLockOnLaunch = (value: boolean) => {
+    updateSettings({ biometricLockOnLaunch: value });
+  };
 
   const [reminderTimeDraft, setReminderTimeDraft] = useState<string>(
     settings.reminderTimeOfDay,
@@ -155,6 +197,10 @@ export default function SettingsScreen() {
   const handleLanguageTap = () => {
     Alert.alert('Language', 'Language selection is coming soon');
   };
+
+  useEffect(() => {
+    setLocale(settings.language);
+  }, [settings.language]);
 
   const handleLicensesTap = () => {
     Alert.alert('Open Source Licenses', 'Licenses screen coming soon');
@@ -621,8 +667,70 @@ export default function SettingsScreen() {
         </View>
         </Animated.View>
 
-        {/* Ads */}
+        {/* Security */}
         <Animated.View entering={FadeInDown.delay(3 * 80).springify()}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: spacing.xs,
+            paddingHorizontal: spacing.lg,
+            marginTop: spacing.xl,
+            marginBottom: spacing.sm,
+          }}
+        >
+          <Lock size={14} color={colors.text.muted} />
+          <Text
+            style={[
+              typography.captionMedium,
+              {
+                color: colors.text.muted,
+                textTransform: 'uppercase',
+                letterSpacing: 0.8,
+              },
+            ]}
+          >
+            Security
+          </Text>
+        </View>
+        <View style={cardStyle}>
+          {renderRow(
+            'biometric-lock',
+            'Biometric Lock',
+            <Switch
+              value={settings.biometricLockEnabled}
+              onValueChange={handleToggleBiometricLock}
+              trackColor={{
+                false: colors.border.medium,
+                true: colors.primary[500],
+              }}
+              thumbColor={colors.bg.card}
+              accessibilityLabel="Biometric lock"
+            />,
+            { sublabel: 'Use Face ID, Touch ID, or device passcode.' },
+          )}
+          <View style={dividerStyle} />
+          {renderRow(
+            'biometric-on-launch',
+            'Lock on App Launch',
+            <Switch
+              value={settings.biometricLockOnLaunch}
+              onValueChange={handleToggleLockOnLaunch}
+              disabled={!settings.biometricLockEnabled}
+              trackColor={{
+                false: colors.border.medium,
+                true: colors.primary[500],
+              }}
+              thumbColor={colors.bg.card}
+              accessibilityLabel="Lock on app launch"
+            />,
+            { disabled: !settings.biometricLockEnabled },
+          )}
+        </View>
+        </Animated.View>
+
+        {/* Ads */}
+        <Animated.View entering={FadeInDown.delay(4 * 80).springify()}>
         <Text style={sectionTitleStyle}>Ads</Text>
         <View style={cardStyle}>
           <View
@@ -646,7 +754,7 @@ export default function SettingsScreen() {
         </Animated.View>
 
         {/* Data */}
-        <Animated.View entering={FadeInDown.delay(4 * 80).springify()}>
+        <Animated.View entering={FadeInDown.delay(5 * 80).springify()}>
         <Text style={sectionTitleStyle}>Data</Text>
         <View style={cardStyle}>
           <View
@@ -663,6 +771,12 @@ export default function SettingsScreen() {
               accessibilityLabel="Export my data"
             />
             <Button
+              label="Export Occasions (.ics)"
+              onPress={handleExportIcs}
+              variant="secondary"
+              accessibilityLabel="Export occasions as ICS calendar"
+            />
+            <Button
               label="Delete All Data"
               onPress={() => setConfirmDeleteOpen(true)}
               variant="destructive"
@@ -673,7 +787,7 @@ export default function SettingsScreen() {
         </Animated.View>
 
         {/* About */}
-        <Animated.View entering={FadeInDown.delay(5 * 80).springify()}>
+        <Animated.View entering={FadeInDown.delay(6 * 80).springify()}>
         <Text style={sectionTitleStyle}>About</Text>
         <View style={cardStyle}>
           {renderRow(

@@ -42,6 +42,8 @@ const MIGRATIONS: Record<number, MigrationFn> = {
       if (!('lastCloudBackupAt' in s)) s.lastCloudBackupAt = s.lastBackupAt ?? null;
       delete s.lastBackupAt;
       if (s.backupDestination === 'google_drive') s.backupDestination = 'saf';
+      if (!('biometricLockEnabled' in s)) s.biometricLockEnabled = false;
+      if (!('biometricLockOnLaunch' in s)) s.biometricLockOnLaunch = false;
       db.set('settings', JSON.stringify(s));
     }
   },
