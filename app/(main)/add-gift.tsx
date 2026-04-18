@@ -1,5 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -211,6 +218,10 @@ export default function AddGiftScreen() {
       style={{ flex: 1, backgroundColor: colors.bg.screen }}
       edges={['top', 'bottom']}
     >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <View
         style={{
           flexDirection: 'row',
@@ -530,6 +541,7 @@ export default function AddGiftScreen() {
         destructive
         onConfirm={confirmDiscard}
       />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

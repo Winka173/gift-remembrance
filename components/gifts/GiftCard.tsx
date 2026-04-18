@@ -152,6 +152,7 @@ export function GiftCard({ gift, currentPersonId, onDelete }: GiftCardProps) {
               }}
             >
               <Text
+                maxFontSizeMultiplier={1.3}
                 style={[
                   typography.caption,
                   { color: colors.text.secondary },
@@ -163,6 +164,7 @@ export function GiftCard({ gift, currentPersonId, onDelete }: GiftCardProps) {
           )}
         </View>
         <Text
+          maxFontSizeMultiplier={1.3}
           style={[typography.caption, { color: colors.text.muted }]}
           numberOfLines={1}
         >

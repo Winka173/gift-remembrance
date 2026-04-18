@@ -81,8 +81,19 @@ export function CountdownBadge({ days }: CountdownBadgeProps) {
   else if (days === 1) label = 'Tomorrow';
   else if (days < 0) label = 'Past';
 
+  const a11y =
+    days === 0
+      ? 'Today'
+      : days === 1
+      ? 'Tomorrow'
+      : days < 0
+      ? 'Past'
+      : `In ${days} days`;
+
   return (
     <Animated.View
+      accessibilityRole="text"
+      accessibilityLabel={a11y}
       style={[
         {
           paddingHorizontal: spacing.md,
@@ -95,6 +106,7 @@ export function CountdownBadge({ days }: CountdownBadgeProps) {
       ]}
     >
       <Animated.Text
+        maxFontSizeMultiplier={1.3}
         style={[
           typography.captionMedium,
           { fontVariant: ['tabular-nums'] },

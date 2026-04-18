@@ -53,7 +53,10 @@ export function Chip({ label, selected = false, onPress, style }: ChipProps) {
       onPressOut={handlePressOut}
       style={[animatedStyle, containerStyle, style]}
     >
-      <Text style={[typography.captionMedium, { color: textColor }]}>
+      <Text
+        maxFontSizeMultiplier={1.3}
+        style={[typography.captionMedium, { color: textColor }]}
+      >
         {label}
       </Text>
     </AnimatedPressable>

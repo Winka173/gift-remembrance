@@ -31,6 +31,17 @@ const FONT_PX: Record<StackSize, number> = {
   lg: 16,
 };
 
+function joinAvatarNames(names: string[]): string {
+  if (names.length === 0) return '';
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  if (names.length === 3) {
+    return `${names[0]}, ${names[1]} and ${names[2]}`;
+  }
+  const othersCount = names.length - 2;
+  return `${names[0]}, ${names[1]} and ${othersCount} others`;
+}
+
 export function PersonAvatarStack({
   people,
   size = 'md',
@@ -43,9 +54,13 @@ export function PersonAvatarStack({
 
   const shown = people.slice(0, max);
   const remaining = people.length - shown.length;
+  const a11yLabel = joinAvatarNames(people.map((p) => p.name));
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View
+      accessibilityLabel={a11yLabel}
+      style={{ flexDirection: 'row', alignItems: 'center' }}
+    >
       {shown.map((p, i) => (
         <Animated.View
           key={p.id}
@@ -76,6 +91,7 @@ export function PersonAvatarStack({
           }}
         >
           <Text
+            maxFontSizeMultiplier={1.3}
             style={[
               typography.captionMedium,
               { color: colors.text.secondary, fontSize: FONT_PX[size] },

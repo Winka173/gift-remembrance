@@ -64,11 +64,62 @@ export async function unzipAndValidate(
   await unzip(zipPath, tmpDir);
   const raw = await FileSystem.readAsStringAsync(`${tmpDir}manifest.json`);
   const parsed = JSON.parse(raw);
-  if (!validateManifest(parsed)) {
-    await FileSystem.deleteAsync(tmpDir, { idempotent: true });
-    throw new Error('Invalid or unsupported backup format');
+
+  const version =
+    parsed && typeof parsed === 'object'
+      ? (parsed as Record<string, unknown>).version
+      : undefined;
+
+  if (version === 1) {
+    const migrated = migrateManifestV1ToV2(parsed);
+    if (!validateManifest(migrated)) {
+      await FileSystem.deleteAsync(tmpDir, { idempotent: true });
+      throw new Error('Invalid or unsupported backup format');
+    }
+    return { manifest: migrated, tempDir: tmpDir };
   }
-  return { manifest: parsed as BackupManifest, tempDir: tmpDir };
+
+  if (version === 2) {
+    if (!validateManifest(parsed)) {
+      await FileSystem.deleteAsync(tmpDir, { idempotent: true });
+      throw new Error('Invalid or unsupported backup format');
+    }
+    return { manifest: parsed as BackupManifest, tempDir: tmpDir };
+  }
+
+  if (typeof version === 'number' && version > 2) {
+    await FileSystem.deleteAsync(tmpDir, { idempotent: true });
+    throw new Error(
+      'This backup is from a newer app version. Update the app to restore.',
+    );
+  }
+
+  await FileSystem.deleteAsync(tmpDir, { idempotent: true });
+  throw new Error('Invalid or unsupported backup format');
+}
+
+function migrateManifestV1ToV2(raw: any): BackupManifest {
+  // v1 had: personId (single) on gifts/occasions, currency field on gifts
+  const gifts = (raw.data?.gifts ?? []).map((g: any) => ({
+    ...g,
+    personIds: g.personIds ?? (g.personId ? [g.personId] : []),
+    personId: undefined,
+    currency: undefined,
+  }));
+  const occasions = (raw.data?.occasions ?? []).map((o: any) => ({
+    ...o,
+    personIds: o.personIds ?? (o.personId ? [o.personId] : []),
+    personId: undefined,
+  }));
+  const people = raw.data?.people ?? [];
+  const settings = raw.data?.settings ?? {};
+  return {
+    version: 2,
+    createdAt: raw.createdAt ?? Date.now(),
+    appVersion: raw.appVersion ?? '1.0.0',
+    deviceOs: raw.deviceOs ?? 'ios',
+    data: { people, gifts, occasions, settings },
+  };
 }
 
 export function validateManifest(m: unknown): m is BackupManifest {

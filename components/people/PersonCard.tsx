@@ -70,12 +70,17 @@ export function PersonCard({
       : 0;
 
   let subtitle: string | null = null;
+  let nextWhen: Date | null = null;
   if (nextOccasion) {
-    const when = nextOccasion.recurring
+    nextWhen = nextOccasion.recurring
       ? nextOccurrence(nextOccasion)
       : parseISO(nextOccasion.date);
-    subtitle = formatRelative(when);
+    subtitle = formatRelative(nextWhen);
   }
+
+  const a11y = `${person.name}${
+    nextWhen ? `, next: ${formatRelative(nextWhen)}` : ''
+  }`;
 
   const card = (
     <AnimatedPressable
@@ -83,7 +88,7 @@ export function PersonCard({
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       accessibilityRole="button"
-      accessibilityLabel={`Open ${person.name}`}
+      accessibilityLabel={a11y}
       style={[
         animatedStyle,
         {

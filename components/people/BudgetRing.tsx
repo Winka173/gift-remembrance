@@ -63,8 +63,15 @@ export function BudgetRing({
     };
   });
 
+  const label =
+    budget && budget > 0
+      ? `Spent ${formatCurrency(spent, currency)} of ${formatCurrency(budget, currency)} annual budget`
+      : `Spent ${formatCurrency(spent, currency)}, no annual budget set`;
+
   return (
     <View
+      accessibilityRole="image"
+      accessibilityLabel={label}
       style={{
         width: size,
         height: size,

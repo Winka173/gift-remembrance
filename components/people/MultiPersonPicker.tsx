@@ -218,7 +218,11 @@ export function MultiPersonPicker({
                     setSelected(selected.slice(0, 1));
                   }
                 }}
-                accessibilityLabel="Toggle multi-select"
+                accessibilityLabel={
+                  activeMode === 'multi'
+                    ? 'Multi-select mode on'
+                    : 'Single-select mode on'
+                }
               />
             </View>
           )}
