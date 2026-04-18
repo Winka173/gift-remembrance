@@ -5,7 +5,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 export async function pickBackupFolder(): Promise<string | null> {
   if (Platform.OS !== 'android') return null;
   try {
-    const result = await DocumentPicker.pickDirectory();
+    const result = await DocumentPicker.pickDirectory({ requestLongTermAccess: true });
     if (!result?.uri) return null;
     return result.uri;
   } catch {

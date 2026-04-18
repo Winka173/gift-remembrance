@@ -133,26 +133,40 @@ export async function runAutoBackupIfDue(
   }
 }
 
+export type WriteDestinationStatus = 'ok' | 'none' | 'icloud_unavailable' | 'saf_not_set' | 'error';
+
 export async function writeToDestination(
   zipPath: string,
   settings: SettingsState,
-): Promise<void> {
-  if (settings.backupDestination === 'none') return;
+): Promise<WriteDestinationStatus> {
+  if (settings.backupDestination === 'none') return 'none';
 
   if (settings.backupDestination === 'icloud' && Platform.OS === 'ios') {
-    const icloudBase = FileSystem.documentDirectory?.replace(
-      '/Documents/',
-      '/Library/Mobile Documents/iCloud~com~giftremembrance~app/Documents/',
-    );
-    if (icloudBase) {
+    try {
+      const icloudBase = FileSystem.documentDirectory?.replace(
+        '/Documents/',
+        '/Library/Mobile Documents/iCloud~com~giftremembrance~app/Documents/',
+      );
+      if (!icloudBase) return 'icloud_unavailable';
       await FileSystem.makeDirectoryAsync(icloudBase, { intermediates: true });
       const fileName = zipPath.split('/').pop() ?? 'backup.gftrmb.zip';
       await FileSystem.copyAsync({ from: zipPath, to: `${icloudBase}${fileName}` });
+      return 'ok';
+    } catch {
+      return 'icloud_unavailable';
     }
   }
 
-  if (settings.backupDestination === 'saf' && Platform.OS === 'android' && settings.safFolderUri) {
-    const fileName = zipPath.split('/').pop() ?? 'backup.gftrmb.zip';
-    await writeFileToSafFolder(settings.safFolderUri, fileName, zipPath);
+  if (settings.backupDestination === 'saf' && Platform.OS === 'android') {
+    if (!settings.safFolderUri) return 'saf_not_set';
+    try {
+      const fileName = zipPath.split('/').pop() ?? 'backup.gftrmb.zip';
+      await writeFileToSafFolder(settings.safFolderUri, fileName, zipPath);
+      return 'ok';
+    } catch {
+      return 'error';
+    }
   }
+
+  return 'none';
 }

@@ -32,7 +32,7 @@ import { deleteAllDataThunk } from '@/store/thunks/deleteAllDataThunk';
 import { rescheduleAllOccasionsThunk } from '@/store/thunks/rescheduleAllOccasionsThunk';
 import { pickBackupFolder } from '@/utils/safUtils';
 import { resetAdsConsent } from '@/utils/adsInit';
-import { formatDate } from '@/utils/dateUtils';
+import { format } from 'date-fns';
 import type { ReminderDays } from '@/types/occasion';
 
 const REMINDER_CHOICES: ReminderDays[] = [1, 3, 7, 14];
@@ -47,8 +47,7 @@ const THEME_CHOICES: Array<{
 
 function formatTimestamp(ts: number | null): string {
   if (ts == null) return 'Never';
-  const iso = new Date(ts).toISOString().slice(0, 10);
-  return formatDate(iso);
+  return format(new Date(ts), 'MMM d, yyyy h:mm a');
 }
 
 function destinationLabel(dest: 'none' | 'icloud' | 'saf'): string {
@@ -141,11 +140,11 @@ export default function SettingsScreen() {
   };
 
   const handleExport = () => {
-    Alert.alert('Export', 'Export is coming soon');
+    backupHook.exportShare();
   };
 
   const handleImport = () => {
-    Alert.alert('Import', 'Import is coming soon');
+    backupHook.restore();
   };
 
   const handleResetAds = () => {
