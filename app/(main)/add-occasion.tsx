@@ -13,6 +13,8 @@ import { OccasionTypePicker } from '@/components/occasions/OccasionTypePicker';
 import { MultiPersonPicker } from '@/components/people/MultiPersonPicker';
 import { OCCASION_TYPES } from '@/constants/occasionTypes';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { useAds } from '@/hooks/useAds';
+import { useInterstitial } from '@/components/ads/InterstitialManager';
 import { saveOccasionThunk } from '@/store/thunks/saveOccasionThunk';
 import type { OccasionType } from '@/types/occasion';
 
@@ -24,6 +26,8 @@ export default function AddOccasionScreen() {
   const { colors, spacing, radius } = useTheme();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { shouldShowInterstitial, recordEvent, markShown } = useAds();
+  const interstitial = useInterstitial();
 
   const editingOccasion = useAppSelector((s) =>
     id ? s.occasions.byId[id] ?? null : null,
@@ -134,6 +138,11 @@ export default function AddOccasionScreen() {
           recurring,
         }),
       ).unwrap();
+      recordEvent();
+      if (shouldShowInterstitial()) {
+        markShown();
+        await interstitial.show().catch(() => {});
+      }
       router.back();
     } finally {
       setSaving(false);

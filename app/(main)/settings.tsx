@@ -29,7 +29,9 @@ import { useSettings } from '@/hooks/useSettings';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useBackup } from '@/hooks/useBackup';
 import { deleteAllDataThunk } from '@/store/thunks/deleteAllDataThunk';
+import { rescheduleAllOccasionsThunk } from '@/store/thunks/rescheduleAllOccasionsThunk';
 import { pickBackupFolder } from '@/utils/safUtils';
+import { resetAdsConsent } from '@/utils/adsInit';
 import { formatDate } from '@/utils/dateUtils';
 import type { ReminderDays } from '@/types/occasion';
 
@@ -78,7 +80,11 @@ export default function SettingsScreen() {
       if (!granted) {
         Alert.alert(
           'Permission required',
-          'Enable notifications in your device settings to get reminders.',
+          'Notifications are disabled in your OS settings',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ],
         );
       }
     } else {
@@ -116,6 +122,7 @@ export default function SettingsScreen() {
     const normalized = `${match[1].padStart(2, '0')}:${match[2]}`;
     updateSettings({ reminderTimeOfDay: normalized });
     setReminderTimeDraft(normalized);
+    dispatch(rescheduleAllOccasionsThunk());
   };
 
   const handleToggleICloud = (value: boolean) => {
@@ -142,7 +149,7 @@ export default function SettingsScreen() {
   };
 
   const handleResetAds = () => {
-    Alert.alert('Reset ad preferences', 'Ad consent form will open here');
+    resetAdsConsent();
   };
 
   const handleLanguageTap = () => {
@@ -335,6 +342,7 @@ export default function SettingsScreen() {
                   onPress={() => {
                     if (!settings.notificationsEnabled) return;
                     updateSettings({ reminderDaysBefore: days });
+                    dispatch(rescheduleAllOccasionsThunk());
                   }}
                 />
               ))}

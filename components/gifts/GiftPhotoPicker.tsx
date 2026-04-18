@@ -12,7 +12,7 @@ interface GiftPhotoPickerProps {
 
 export function GiftPhotoPicker({ photoUri, onChange }: GiftPhotoPickerProps) {
   const { colors, spacing, radius } = useTheme();
-  const { uri, loading, pick, remove } = usePhotoAttach();
+  const { uri, loading, pick, takePhoto, remove } = usePhotoAttach();
   const lastSyncedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export function GiftPhotoPicker({ photoUri, onChange }: GiftPhotoPickerProps) {
       <Button
         label="Take Photo"
         variant="secondary"
-        onPress={pick}
+        onPress={takePhoto}
         disabled={loading}
         accessibilityLabel="Take photo with camera"
       />

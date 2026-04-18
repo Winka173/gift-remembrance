@@ -13,6 +13,8 @@ import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PersonAvatar } from '@/components/people/PersonAvatar';
 import { useAppDispatch } from '@/store/hooks';
+import { useAds } from '@/hooks/useAds';
+import { useInterstitial } from '@/components/ads/InterstitialManager';
 import { createPersonThunk } from '@/store/thunks/createPersonThunk';
 import { saveOccasionThunk } from '@/store/thunks/saveOccasionThunk';
 import { usePhotoAttach } from '@/hooks/usePhotoAttach';
@@ -33,6 +35,8 @@ export default function AddPersonScreen() {
   const { colors, spacing, radius } = useTheme();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { shouldShowInterstitial, recordEvent, markShown } = useAds();
+  const interstitial = useInterstitial();
   const { uri: pickedUri, loading: photoLoading, pick } = usePhotoAttach();
 
   const [tab, setTab] = useState<Tab>('manual');
@@ -111,6 +115,11 @@ export default function AddPersonScreen() {
         ).unwrap();
       }
 
+      recordEvent();
+      if (shouldShowInterstitial()) {
+        markShown();
+        await interstitial.show().catch(() => {});
+      }
       router.back();
     } finally {
       setSaving(false);

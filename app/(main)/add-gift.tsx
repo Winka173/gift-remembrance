@@ -17,6 +17,8 @@ import { MultiPersonPicker } from '@/components/people/MultiPersonPicker';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { saveGiftThunk } from '@/store/thunks/saveGiftThunk';
 import { nextOccurrence } from '@/utils/dateUtils';
+import { useAds } from '@/hooks/useAds';
+import { useInterstitial } from '@/components/ads/InterstitialManager';
 import type { GiftDirection, OccasionLinkType } from '@/types/gift';
 
 export default function AddGiftScreen() {
@@ -27,6 +29,8 @@ export default function AddGiftScreen() {
   const { colors, spacing, radius } = useTheme();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { shouldShowInterstitial, recordEvent, markShown } = useAds();
+  const interstitial = useInterstitial();
 
   const editingGift = useAppSelector((s) =>
     id ? s.gifts.byId[id] ?? null : null,
@@ -179,6 +183,11 @@ export default function AddGiftScreen() {
           notes: notes.trim() ? notes.trim() : null,
         }),
       ).unwrap();
+      recordEvent();
+      if (shouldShowInterstitial()) {
+        markShown();
+        await interstitial.show().catch(() => {});
+      }
       router.back();
     } finally {
       setSaving(false);
