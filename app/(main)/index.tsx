@@ -57,6 +57,7 @@ export default function HomeScreen() {
         <Button
           label="Add person"
           onPress={() => {}}
+          accessibilityLabel="Add new person"
           style={{ alignSelf: 'flex-start' }}
         />
       </ScrollView>

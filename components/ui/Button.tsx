@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { Pressable, Text, ViewStyle, TextStyle } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,8 +12,9 @@ import { typography } from '@/constants/typography';
 interface ButtonProps {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'destructive';
   disabled?: boolean;
+  accessibilityLabel: string;
   style?: ViewStyle;
   textStyle?: TextStyle;
 }
@@ -25,10 +26,11 @@ export function Button({
   onPress,
   variant = 'primary',
   disabled = false,
+  accessibilityLabel,
   style,
   textStyle,
 }: ButtonProps) {
-  const { colors, radius } = useTheme();
+  const { colors } = useTheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -43,23 +45,25 @@ export function Button({
     scale.value = withSpring(1, springs.button);
   };
 
+  const bg =
+    variant === 'primary'
+      ? colors.primary[500]
+      : variant === 'destructive'
+      ? colors.semantic.error
+      : colors.bg.surface;
+
   const containerStyle: ViewStyle = {
-    backgroundColor:
-      variant === 'primary'
-        ? colors.primary[500]
-        : variant === 'secondary'
-        ? colors.bg.surface
-        : 'transparent',
-    borderRadius: radius.md,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    backgroundColor: bg,
+    height: 52,
+    borderRadius: 26,
+    paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
     opacity: disabled ? 0.5 : 1,
   };
 
   const labelColor =
-    variant === 'primary' ? colors.text.inverse : colors.text.primary;
+    variant === 'secondary' ? colors.text.primary : colors.text.inverse;
 
   return (
     <AnimatedPressable
@@ -67,6 +71,9 @@ export function Button({
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled }}
       style={[animatedStyle, containerStyle, style]}
     >
       <Text style={[typography.button, { color: labelColor }, textStyle]}>
