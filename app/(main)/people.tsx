@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, FlatList, Pressable } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/constants/theme';
@@ -210,20 +211,24 @@ export default function PeopleScreen() {
                 </Text>
               </View>
             }
-            renderItem={({ item }) => {
+            renderItem={({ item, index }) => {
               const totalGivenYTD = computeYearSpend(
                 item.id,
                 gifts,
                 currentYear,
               );
               return (
-                <PersonCard
-                  person={item}
-                  nextOccasion={nextOccasionByPerson[item.id]}
-                  totalGivenYTD={totalGivenYTD}
-                  annualBudget={item.annualBudget}
-                  onDelete={() => setPendingDelete(item)}
-                />
+                <Animated.View
+                  entering={FadeInDown.delay(index * 40).springify().damping(18)}
+                >
+                  <PersonCard
+                    person={item}
+                    nextOccasion={nextOccasionByPerson[item.id]}
+                    totalGivenYTD={totalGivenYTD}
+                    annualBudget={item.annualBudget}
+                    onDelete={() => setPendingDelete(item)}
+                  />
+                </Animated.View>
               );
             }}
           />

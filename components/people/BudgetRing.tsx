@@ -1,28 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { getDayOfYear, getDaysInYear } from 'date-fns';
+import Animated, {
+  useSharedValue,
+  useAnimatedProps,
+  withTiming,
+  interpolateColor,
+  Easing,
+} from 'react-native-reanimated';
 import { useTheme } from '@/constants/theme';
 import { typography } from '@/constants/typography';
 import { useAppSelector } from '@/store/hooks';
-import { formatCurrency, type BudgetStatus } from '@/utils/budgetUtils';
+import { formatCurrency } from '@/utils/budgetUtils';
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface BudgetRingProps {
   spent: number;
   budget: number | null;
   size?: number;
   strokeWidth?: number;
-}
-
-function statusFor(spent: number, budget: number | null): BudgetStatus {
-  if (budget === null || budget === 0) return 'no_budget';
-  const ratio = spent / budget;
-  const now = new Date();
-  const yearProgress = getDayOfYear(now) / getDaysInYear(now);
-  if (ratio > 1) return 'over';
-  if (ratio > yearProgress + 0.15) return 'over';
-  if (ratio < yearProgress - 0.15) return 'under';
-  return 'on_track';
 }
 
 export function BudgetRing({
@@ -36,19 +33,35 @@ export function BudgetRing({
 
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const ratio =
-    budget && budget > 0 ? Math.min(1, Math.max(0, spent / budget)) : 0;
-  const dashOffset = circumference * (1 - ratio);
 
-  const status = statusFor(spent, budget);
-  const progressColor =
-    status === 'under'
-      ? colors.budget.under
-      : status === 'on_track'
-      ? colors.budget.onTrack
-      : status === 'over'
-      ? colors.budget.over
-      : colors.text.muted;
+  const progress = useSharedValue(0);
+  useEffect(() => {
+    const target =
+      budget && budget > 0 ? Math.min(spent / budget, 1.2) : 0;
+    progress.value = withTiming(target, {
+      duration: 480,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [spent, budget, progress]);
+
+  const animatedProps = useAnimatedProps(() => {
+    const clamped = Math.min(Math.max(progress.value, 0), 1);
+    const offset = circumference * (1 - clamped);
+    const color = interpolateColor(
+      progress.value,
+      [0, 0.7, 1, 1.2],
+      [
+        colors.budget.under,
+        colors.budget.onTrack,
+        colors.budget.over,
+        colors.budget.over,
+      ],
+    );
+    return {
+      strokeDashoffset: offset,
+      stroke: color,
+    };
+  });
 
   return (
     <View
@@ -69,17 +82,16 @@ export function BudgetRing({
           fill="none"
         />
         {budget != null && budget > 0 && (
-          <Circle
+          <AnimatedCircle
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke={progressColor}
             strokeWidth={strokeWidth}
             fill="none"
             strokeLinecap="round"
-            strokeDasharray={`${circumference} ${circumference}`}
-            strokeDashoffset={dashOffset}
+            strokeDasharray={circumference}
             transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            animatedProps={animatedProps}
           />
         )}
       </Svg>

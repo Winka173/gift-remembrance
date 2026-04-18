@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, ViewStyle } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable, ViewStyle, StyleSheet } from 'react-native';
 import Animated, {
+  FadeInDown,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
-  interpolate,
+  withRepeat,
+  withSequence,
   type SharedValue,
 } from 'react-native-reanimated';
 import { useTheme } from '@/constants/theme';
@@ -24,7 +26,7 @@ interface ChildActionProps {
   icon: LucideIcon;
   label: string;
   onPress: () => void;
-  progress: SharedValue<number>;
+  open: SharedValue<number>;
   index: number;
 }
 
@@ -32,26 +34,25 @@ function ChildAction({
   icon: Icon,
   label,
   onPress,
-  progress,
+  open,
   index,
 }: ChildActionProps) {
   const { colors, spacing, radius, shadow } = useTheme();
 
   const animatedStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(
-      progress.value,
-      [0, 1],
-      [0, -(64 * (index + 1))],
-    );
+    const translateY = -(64 * (index + 1)) * open.value;
     return {
-      opacity: progress.value,
-      transform: [{ translateY }],
+      opacity: open.value,
+      transform: [
+        { translateY: translateY + (1 - open.value) * 20 },
+      ],
     };
   });
 
   return (
     <Animated.View
       pointerEvents="box-none"
+      entering={FadeInDown.delay(index * 60).springify()}
       style={[
         {
           position: 'absolute',
@@ -111,17 +112,38 @@ export function FABMenu({
 }: FABMenuProps) {
   const { colors, spacing, shadow } = useTheme();
   const [open, setOpen] = useState(false);
-  const progress = useSharedValue(0);
+  const openValue = useSharedValue(0);
   const scale = useSharedValue(1);
+  const pulse = useSharedValue(0);
+
+  useEffect(() => {
+    if (!open) {
+      pulse.value = withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1400 }),
+          withTiming(0, { duration: 0 }),
+        ),
+        -1,
+        false,
+      );
+    } else {
+      pulse.value = withTiming(0, { duration: duration.fast });
+    }
+  }, [open, pulse]);
 
   const toggle = () => {
     const next = !open;
     setOpen(next);
-    progress.value = withTiming(next ? 1 : 0, { duration: duration.fast });
+    openValue.value = withSpring(next ? 1 : 0, springs.fab);
+  };
+
+  const close = () => {
+    setOpen(false);
+    openValue.value = withSpring(0, springs.fab);
   };
 
   const handleChild = (fn: () => void) => () => {
-    progress.value = withTiming(0, { duration: duration.fast });
+    openValue.value = withSpring(0, springs.fab);
     setOpen(false);
     fn();
   };
@@ -129,8 +151,17 @@ export function FABMenu({
   const fabAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       { scale: scale.value },
-      { rotate: `${interpolate(progress.value, [0, 1], [0, 45])}deg` },
+      { rotate: `${openValue.value * 45}deg` },
     ],
+  }));
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    opacity: 0.3 * (1 - pulse.value),
+    transform: [{ scale: 1 + pulse.value * 0.2 }],
+  }));
+
+  const overlayStyle = useAnimatedStyle(() => ({
+    opacity: openValue.value * 0.4,
   }));
 
   const containerStyle: ViewStyle = {
@@ -141,58 +172,96 @@ export function FABMenu({
   };
 
   return (
-    <View style={containerStyle} pointerEvents="box-none">
-      <ChildAction
-        icon={Gift}
-        label="Add Gift"
-        onPress={handleChild(onAddGift)}
-        progress={progress}
-        index={0}
-      />
-      <ChildAction
-        icon={Users}
-        label="Add Person"
-        onPress={handleChild(onAddPerson)}
-        progress={progress}
-        index={1}
-      />
-      <ChildAction
-        icon={CalendarPlus}
-        label="Add Occasion"
-        onPress={handleChild(onAddOccasion)}
-        progress={progress}
-        index={2}
-      />
-
-      <Pressable
-        onPress={toggle}
-        onPressIn={() => {
-          scale.value = withSpring(0.92, springs.fab);
-        }}
-        onPressOut={() => {
-          scale.value = withSpring(1, springs.fab);
-        }}
-        accessibilityRole="button"
-        accessibilityLabel={open ? 'Close add menu' : 'Open add menu'}
-        accessibilityState={{ expanded: open }}
+    <>
+      <Animated.View
+        pointerEvents={open ? 'auto' : 'none'}
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: colors.bg.overlay ?? '#000' },
+          overlayStyle,
+        ]}
       >
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={close}
+          accessibilityRole="button"
+          accessibilityLabel="Close add menu"
+        />
+      </Animated.View>
+
+      <View style={containerStyle} pointerEvents="box-none">
+        {open && (
+          <>
+            <ChildAction
+              icon={Gift}
+              label="Add Gift"
+              onPress={handleChild(onAddGift)}
+              open={openValue}
+              index={0}
+            />
+            <ChildAction
+              icon={Users}
+              label="Add Person"
+              onPress={handleChild(onAddPerson)}
+              open={openValue}
+              index={1}
+            />
+            <ChildAction
+              icon={CalendarPlus}
+              label="Add Occasion"
+              onPress={handleChild(onAddOccasion)}
+              open={openValue}
+              index={2}
+            />
+          </>
+        )}
+
         <Animated.View
+          pointerEvents="none"
           style={[
             {
+              position: 'absolute',
               width: 56,
               height: 56,
               borderRadius: 28,
               backgroundColor: colors.primary[500],
-              alignItems: 'center',
-              justifyContent: 'center',
+              right: 0,
+              bottom: 0,
             },
-            shadow.fab,
-            fabAnimatedStyle,
+            pulseStyle,
           ]}
+        />
+
+        <Pressable
+          onPress={toggle}
+          onPressIn={() => {
+            scale.value = withSpring(0.92, springs.fab);
+          }}
+          onPressOut={() => {
+            scale.value = withSpring(1, springs.fab);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={open ? 'Close add menu' : 'Open add menu'}
+          accessibilityState={{ expanded: open }}
         >
-          <Plus size={28} color={colors.text.inverse} strokeWidth={2.5} />
-        </Animated.View>
-      </Pressable>
-    </View>
+          <Animated.View
+            style={[
+              {
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: colors.primary[500],
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+              shadow.fab,
+              fabAnimatedStyle,
+            ]}
+          >
+            <Plus size={28} color={colors.text.inverse} strokeWidth={2.5} />
+          </Animated.View>
+        </Pressable>
+      </View>
+    </>
   );
 }

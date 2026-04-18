@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useTheme } from '@/constants/theme';
 import { typography } from '@/constants/typography';
 import { PersonAvatar } from './PersonAvatar';
@@ -46,8 +47,9 @@ export function PersonAvatarStack({
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
       {shown.map((p, i) => (
-        <View
+        <Animated.View
           key={p.id}
+          entering={FadeInDown.delay(i * 50).springify().damping(14)}
           style={{
             marginLeft: i === 0 ? 0 : overlap,
             borderWidth: border,
@@ -57,7 +59,7 @@ export function PersonAvatarStack({
           }}
         >
           <PersonAvatar name={p.name} photoUri={p.avatarUri} size={size} />
-        </View>
+        </Animated.View>
       ))}
       {remaining > 0 && (
         <View

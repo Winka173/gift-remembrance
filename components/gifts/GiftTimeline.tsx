@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { SectionList, View, Text } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { format, parseISO } from 'date-fns';
 import { useTheme } from '@/constants/theme';
 import { typography } from '@/constants/typography';
@@ -105,14 +106,17 @@ export function GiftTimeline({
           </Text>
         </View>
       )}
-      renderItem={({ item }) => (
-        <View style={{ marginBottom: spacing.sm }}>
+      renderItem={({ item, index }) => (
+        <Animated.View
+          style={{ marginBottom: spacing.sm }}
+          entering={FadeInDown.delay(Math.min(index, 10) * 50).springify().damping(18)}
+        >
           <GiftCard
             gift={item}
             currentPersonId={currentPersonId}
             onDelete={onDeleteGift ? () => onDeleteGift(item.id) : undefined}
           />
-        </View>
+        </Animated.View>
       )}
     />
   );

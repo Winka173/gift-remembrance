@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
@@ -294,6 +295,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Notifications */}
+        <Animated.View entering={FadeInDown.delay(0 * 80).springify()}>
         <Text style={sectionTitleStyle}>Notifications</Text>
         <View style={cardStyle}>
           {renderRow(
@@ -398,8 +400,10 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
+        </Animated.View>
 
         {/* Backup & Data */}
+        <Animated.View entering={FadeInDown.delay(1 * 80).springify()}>
         <Text style={sectionTitleStyle}>Backup & Data</Text>
         <View style={cardStyle}>
           {renderRow(
@@ -524,8 +528,10 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
+        </Animated.View>
 
         {/* Preferences */}
+        <Animated.View entering={FadeInDown.delay(2 * 80).springify()}>
         <Text style={sectionTitleStyle}>Preferences</Text>
         <View style={cardStyle}>
           {settings.currencyLocked
@@ -613,8 +619,10 @@ export default function SettingsScreen() {
             </View>
           </View>
         </View>
+        </Animated.View>
 
         {/* Ads */}
+        <Animated.View entering={FadeInDown.delay(3 * 80).springify()}>
         <Text style={sectionTitleStyle}>Ads</Text>
         <View style={cardStyle}>
           <View
@@ -635,8 +643,10 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
+        </Animated.View>
 
         {/* Data */}
+        <Animated.View entering={FadeInDown.delay(4 * 80).springify()}>
         <Text style={sectionTitleStyle}>Data</Text>
         <View style={cardStyle}>
           <View
@@ -660,8 +670,10 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
+        </Animated.View>
 
         {/* About */}
+        <Animated.View entering={FadeInDown.delay(5 * 80).springify()}>
         <Text style={sectionTitleStyle}>About</Text>
         <View style={cardStyle}>
           {renderRow(
@@ -695,6 +707,7 @@ export default function SettingsScreen() {
             },
           )}
         </View>
+        </Animated.View>
       </ScrollView>
 
       {/* Currency picker modal */}

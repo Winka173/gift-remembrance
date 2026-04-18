@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import Animated, { FadeInRight } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/constants/theme';
@@ -106,10 +107,14 @@ export default function HomeScreen() {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={{ gap: spacing.md, paddingRight: spacing.lg }}
                 >
-                  {upcomingOccasions.map((o) => (
-                    <View key={o.id} style={{ width: 280 }}>
+                  {upcomingOccasions.map((o, index) => (
+                    <Animated.View
+                      key={o.id}
+                      style={{ width: 280 }}
+                      entering={FadeInRight.delay(index * 60).springify().damping(18)}
+                    >
                       <OccasionCard occasion={o} />
-                    </View>
+                    </Animated.View>
                   ))}
                 </ScrollView>
               </View>

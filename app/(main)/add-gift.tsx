@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
@@ -415,7 +416,8 @@ export default function AddGiftScreen() {
         </View>
 
         {duplicate != null && (
-          <View
+          <Animated.View
+            entering={FadeInDown.springify()}
             style={{
               flexDirection: 'row',
               gap: spacing.sm,
@@ -448,7 +450,7 @@ export default function AddGiftScreen() {
                 anyway?
               </Text>
             </View>
-          </View>
+          </Animated.View>
         )}
 
         <CurrencyInput

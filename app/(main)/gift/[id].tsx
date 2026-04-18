@@ -14,6 +14,7 @@ import {
 } from '@/constants/icons';
 import { Button } from '@/components/ui/Button';
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
+import { PhotoZoomModal } from '@/components/ui/PhotoZoomModal';
 import { BannerAdSlot } from '@/components/ads/BannerAdSlot';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { deleteGift } from '@/store/slices/giftsSlice';
@@ -41,6 +42,7 @@ export default function GiftDetailScreen() {
   const currency = useAppSelector((s) => s.settings.currency);
 
   const [confirmDelete, setConfirmDelete] = useState<boolean>(false);
+  const [zoom, setZoom] = useState<boolean>(false);
 
   const linkedPeople = useMemo(() => {
     if (!gift) return [];
@@ -260,17 +262,23 @@ export default function GiftDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {gift.photoUri ? (
-          <Image
-            source={{ uri: gift.photoUri }}
-            style={{
-              width: '100%',
-              aspectRatio: 16 / 9,
-              borderRadius: radius.lg,
-              backgroundColor: colors.bg.surface,
-            }}
-            resizeMode="cover"
-            accessibilityIgnoresInvertColors
-          />
+          <Pressable
+            onPress={() => setZoom(true)}
+            accessibilityRole="button"
+            accessibilityLabel="View photo"
+          >
+            <Image
+              source={{ uri: gift.photoUri }}
+              style={{
+                width: '100%',
+                aspectRatio: 16 / 9,
+                borderRadius: radius.lg,
+                backgroundColor: colors.bg.surface,
+              }}
+              resizeMode="cover"
+              accessibilityIgnoresInvertColors
+            />
+          </Pressable>
         ) : null}
 
         <View style={{ gap: spacing.sm }}>
@@ -385,6 +393,14 @@ export default function GiftDetailScreen() {
         destructive
         onConfirm={handleConfirmDelete}
       />
+
+      {gift.photoUri ? (
+        <PhotoZoomModal
+          visible={zoom}
+          uri={gift.photoUri}
+          onClose={() => setZoom(false)}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }

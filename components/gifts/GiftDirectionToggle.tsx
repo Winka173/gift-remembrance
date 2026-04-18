@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Pressable, Text } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import { useTheme } from '@/constants/theme';
+import { springs } from '@/constants/motion';
 import { typography } from '@/constants/typography';
 import { ArrowUpRight, ArrowDownLeft } from '@/constants/icons';
 
@@ -15,17 +21,25 @@ export function GiftDirectionToggle({
 }: GiftDirectionToggleProps) {
   const { colors, spacing, radius } = useTheme();
 
+  const indicatorX = useSharedValue(value === 'given' ? 0 : 1);
+  useEffect(() => {
+    indicatorX.value = withSpring(value === 'given' ? 0 : 1, springs.chip);
+  }, [value, indicatorX]);
+
+  const indicatorStyle = useAnimatedStyle(() => ({
+    left: `${indicatorX.value * 50}%`,
+    backgroundColor:
+      indicatorX.value < 0.5
+        ? colors.direction.givenBg
+        : colors.direction.receivedBg,
+  }));
+
   const renderPill = (
     pill: 'given' | 'received',
     label: string,
     Icon: typeof ArrowUpRight,
   ) => {
     const selected = value === pill;
-    const bg = selected
-      ? pill === 'given'
-        ? colors.direction.givenBg
-        : colors.direction.receivedBg
-      : 'transparent';
     const fg = selected
       ? pill === 'given'
         ? colors.direction.given
@@ -47,7 +61,6 @@ export function GiftDirectionToggle({
           paddingVertical: spacing.sm,
           paddingHorizontal: spacing.md,
           borderRadius: radius.full,
-          backgroundColor: bg,
         }}
       >
         <Icon size={16} color={fg} />
@@ -59,8 +72,9 @@ export function GiftDirectionToggle({
   return (
     <View
       style={{
+        position: 'relative',
         flexDirection: 'row',
-        gap: spacing.xs,
+        width: '100%',
         padding: spacing.xs,
         borderRadius: radius.full,
         backgroundColor: colors.bg.surface,
@@ -68,6 +82,19 @@ export function GiftDirectionToggle({
         borderColor: colors.border.light,
       }}
     >
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          {
+            position: 'absolute',
+            top: spacing.xs,
+            bottom: spacing.xs,
+            width: '50%',
+            borderRadius: radius.full,
+          },
+          indicatorStyle,
+        ]}
+      />
       {renderPill('given', 'Given', ArrowUpRight)}
       {renderPill('received', 'Received', ArrowDownLeft)}
     </View>

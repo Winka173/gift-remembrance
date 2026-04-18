@@ -1,5 +1,14 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useEffect } from 'react';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useDerivedValue,
+  withRepeat,
+  withTiming,
+  withSequence,
+  interpolateColor,
+  Easing,
+} from 'react-native-reanimated';
 import { useTheme } from '@/constants/theme';
 import { typography } from '@/constants/typography';
 
@@ -10,10 +19,62 @@ interface CountdownBadgeProps {
 export function CountdownBadge({ days }: CountdownBadgeProps) {
   const { colors, spacing, radius } = useTheme();
 
-  let color = colors.countdown.far;
-  if (days <= 3) color = colors.countdown.imminent;
-  else if (days <= 7) color = colors.countdown.soon;
-  else if (days <= 30) color = colors.countdown.near;
+  const daysVal = useDerivedValue(() => days, [days]);
+
+  const animatedBgStyle = useAnimatedStyle(() => {
+    const color = interpolateColor(
+      daysVal.value,
+      [-1, 3, 7, 30, 60],
+      [
+        colors.countdown.imminent,
+        colors.countdown.imminent,
+        colors.countdown.soon,
+        colors.countdown.near,
+        colors.countdown.far,
+      ],
+    );
+    return { backgroundColor: color + '22' };
+  });
+
+  const animatedTextColor = useAnimatedStyle(() => ({
+    color: interpolateColor(
+      daysVal.value,
+      [-1, 3, 7, 30, 60],
+      [
+        colors.countdown.imminent,
+        colors.countdown.imminent,
+        colors.countdown.soon,
+        colors.countdown.near,
+        colors.countdown.far,
+      ],
+    ),
+  }));
+
+  const scale = useSharedValue(1);
+  useEffect(() => {
+    if (days >= 0 && days < 7) {
+      scale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, {
+            duration: 600,
+            easing: Easing.inOut(Easing.quad),
+          }),
+          withTiming(1, {
+            duration: 600,
+            easing: Easing.inOut(Easing.quad),
+          }),
+        ),
+        -1,
+        false,
+      );
+    } else {
+      scale.value = withTiming(1, { duration: 200 });
+    }
+  }, [days, scale]);
+
+  const animatedScale = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   let label = `${days} days`;
   if (days === 0) label = 'Today';
@@ -21,23 +82,27 @@ export function CountdownBadge({ days }: CountdownBadgeProps) {
   else if (days < 0) label = 'Past';
 
   return (
-    <View
-      style={{
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.xs,
-        borderRadius: radius.full,
-        backgroundColor: color + '22',
-        alignSelf: 'flex-start',
-      }}
+    <Animated.View
+      style={[
+        {
+          paddingHorizontal: spacing.md,
+          paddingVertical: spacing.xs,
+          borderRadius: radius.full,
+          alignSelf: 'flex-start',
+        },
+        animatedBgStyle,
+        animatedScale,
+      ]}
     >
-      <Text
+      <Animated.Text
         style={[
           typography.captionMedium,
-          { color, fontVariant: ['tabular-nums'] },
+          { fontVariant: ['tabular-nums'] },
+          animatedTextColor,
         ]}
       >
         {label}
-      </Text>
-    </View>
+      </Animated.Text>
+    </Animated.View>
   );
 }
