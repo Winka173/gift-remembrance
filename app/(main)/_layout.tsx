@@ -1,16 +1,71 @@
 import { Stack } from 'expo-router';
-import { useTheme } from '@/constants/theme';
+import { InterstitialProvider } from '@/components/ads/InterstitialManager';
 
 export default function MainLayout() {
-  const { colors } = useTheme();
-
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.bg.screen },
-        animation: 'slide_from_right',
-      }}
-    />
+    <InterstitialProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name="index"
+          options={{ animation: 'fade', animationDuration: 220 }}
+        />
+        <Stack.Screen
+          name="people"
+          options={{ animation: 'slide_from_right', animationDuration: 280 }}
+        />
+        <Stack.Screen
+          name="calendar"
+          options={{ animation: 'slide_from_right', animationDuration: 280 }}
+        />
+        <Stack.Screen
+          name="person/[id]"
+          options={{ animation: 'slide_from_right', animationDuration: 280 }}
+        />
+        <Stack.Screen
+          name="gift/[id]"
+          options={{ animation: 'slide_from_right', animationDuration: 280 }}
+        />
+        <Stack.Screen
+          name="add-gift"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            animationDuration: 340,
+          }}
+        />
+        <Stack.Screen
+          name="add-person"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            animationDuration: 340,
+          }}
+        />
+        <Stack.Screen
+          name="add-occasion"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            animationDuration: 340,
+          }}
+        />
+        <Stack.Screen
+          name="contacts-import"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            animationDuration: 340,
+          }}
+        />
+        <Stack.Screen
+          name="settings"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            animationDuration: 340,
+          }}
+        />
+      </Stack>
+    </InterstitialProvider>
   );
 }
