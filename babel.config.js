@@ -6,8 +6,8 @@ module.exports = function (api) {
     plugins: isTest
       ? []
       : [
-          // react-native-reanimated/plugin MUST be last
-          'react-native-reanimated/plugin',
+          // react-native-worklets/plugin MUST be last (Reanimated v4+)
+          'react-native-worklets/plugin',
         ],
   };
 };
